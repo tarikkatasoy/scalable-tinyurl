@@ -27,7 +27,7 @@ Resources:
      - x86_64
      Environment:
        Variables:
-         TABLE_NAME: !Ref UrlTable
+         URL_LOOKUP_TABLE_NAME_DYNAMODB: !Ref UrlTable
      Policies:
        - DynamoDBCrudPolicy:
           TableName: !Ref UrlTable
@@ -58,6 +58,4 @@ Outputs:
  HelloWorldFunctionIamRole:
    Description: Implicit IAM Role created for Hello World function
    Value: !GetAtt HelloWorldFunctionRole.Arn
-
-
-
+   
