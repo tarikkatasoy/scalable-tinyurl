@@ -1,42 +1,57 @@
 import json
+import os
+import uuid
+import boto3
 
-# import requests
+
+# Initialize the DynamoDB client
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table(os.environ.get("TABLE_NAME"))
 
 
 def lambda_handler(event, context):
-    """Sample pure Lambda function
+   try:
+       # Get the long URL from the POST request body
+       body = json.loads(event.get("body", "{}"))
+       long_url = body.get("long_url")
 
-    Parameters
-    ----------
-    event: dict, required
-        API Gateway Lambda Proxy Input Format
 
-        Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+       if not long_url:
+           return {
+               "statusCode": 400,
+               "body": json.dumps({"error": "long_url is a required field"}),
+           }
 
-    context: object, required
-        Lambda Context runtime methods and attributes
 
-        Context doc: https://docs.aws.amazon.com/lambda/latest/dg/python-context-object.html
+       # Generate a unique short ID (I will replace this with base62 later)
+       short_id = str(uuid.uuid4())[:7]
 
-    Returns
-    ------
-    API Gateway Lambda Proxy Output Format: dict
 
-        Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
-    """
+       # Save the mapping to DynamoDB
+       table.put_item(
+           Item={
+               'id': short_id,
+               'long_url': long_url
+           }
+       )
 
-    # try:
-    #     ip = requests.get("http://checkip.amazonaws.com/")
-    # except requests.RequestException as e:
-    #     # Send some context about this error to Lambda Logs
-    #     print(e)
 
-    #     raise e
+       # Construct the short URL to return to the user
+       api_gateway_url = f"https://{event['requestContext']['domainName']}/{event['requestContext']['stage']}"
+       short_url = f"{api_gateway_url}/{short_id}"
 
-    return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": "hello world",
-            # "location": ip.text.replace("\n", "")
-        }),
-    }
+
+       return {
+           "statusCode": 200,
+           "body": json.dumps({
+               "short_url": short_url,
+               "long_url": long_url
+           }),
+       }
+   except Exception as e:
+       print(f"Error: {e}")
+       return {
+           "statusCode": 500,
+           "body": json.dumps({"error": "An internal error occurred"}),
+       }
+
