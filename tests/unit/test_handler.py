@@ -35,3 +35,32 @@ def test_lambda_handler(apigw_event, mocker):
     mock_table.put_item.assert_called_once()
     assert "short_url" in data
     assert data["long_url"] == "https://www.example.com"
+
+def test_should_return_400_when_url_is_missing(apigw_event, mocker):
+    """
+    Tests that the handler returns a 400 error if the 'url' key is missing from the body.
+    """
+    # Modify the fixture to have an empty body for this test
+    apigw_event["body"] = "{}"
+    
+    ret = app.lambda_handler(apigw_event, "")
+    data = json.loads(ret["body"])
+
+    assert ret["statusCode"] == 400
+    assert "error" in data
+    assert data["error"] == "No URL found in the request."
+
+
+def test_should_return_400_when_url_is_invalid(apigw_event, mocker):
+    """
+    Tests that the handler returns a 400 error if the 'url' value is not a valid URL.
+    """
+    # Modify the fixture to have an invalid URL for this test
+    apigw_event["body"] = '{ "url": "this-is-not-a-url" }'
+
+    ret = app.lambda_handler(apigw_event, "")
+    data = json.loads(ret["body"])
+
+    assert ret["statusCode"] == 400
+    assert "error" in data
+    assert data["error"] == "The provided URL is not valid."
