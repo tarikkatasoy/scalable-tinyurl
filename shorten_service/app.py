@@ -4,6 +4,21 @@ import uuid
 import boto3
 import logging
 import validators
+from decimal import Decimal
+
+BASE62_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+def to_base62(num):
+    """Converts a positive integer to a Base62 string."""
+    if num == 0:
+        return BASE62_ALPHABET[0]
+    
+    base62_str = ""
+    num = int(num) 
+    while num > 0:
+        num, rem = divmod(num, 62)
+        base62_str = BASE62_ALPHABET[rem] + base62_str
+    return base62_str
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -36,10 +51,15 @@ def lambda_handler(event, context):
            }
 
 
-       # TODO (tarik): Replace this with base62 logic
-       short_id = uuid.uuid4().hex[:7]
+       response = short_url_table.update_item(
+           Key={'id': 'counter'},
+           UpdateExpression='ADD url_count :val',
+           ExpressionAttributeValues={':val': Decimal(1)}, # Use Decimal for the counter
+           ReturnValues="UPDATED_NEW"
+       )
+       counter_value = response['Attributes']['url_count']
 
-
+       short_id = to_base62(counter_value)
  
        item_to_save = {
            'id': short_id,
