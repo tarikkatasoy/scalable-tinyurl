@@ -54,7 +54,7 @@ Outputs:
       Value: !Sub "https://{ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/shorten/"
 ShortenUrlFunction:
      Description: Shorten URL Lambda Function ARN
-    Value: !GetAtt ShortenUrlFunction.Arn
+     Value: !GetAtt ShortenUrlFunction.Arn
 ShortenUrlFunctionIamRole:
      Description: Implicit IAM Role created for Shorten URL function
      Value: !GetAtt ShortenUrlFunctionRole.Arn
