@@ -1,3 +1,6 @@
 pytest
+pytest-mock
 boto3
-requests
+moto
+validators
+botocore
