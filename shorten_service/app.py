@@ -72,8 +72,7 @@ def lambda_handler(event, context):
            Item=item_to_save
        )
 
-       api_gateway_url = f"https://{event['requestContext']['domainName']}/{event['requestContext']['stage']}"
-       short_url = f"{api_gateway_url}/{short_id}"
+       short_url = f"https://tariksurl.com/{short_id}"
 
 
        return {
