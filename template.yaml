@@ -37,6 +37,26 @@ Resources:
          Properties:
            Path: /shorten
            Method: post
+ RedirectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: redirect_service/
+      Handler: app.redirect_handler
+      Runtime: python3.13
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          URL_LOOKUP_TABLE_NAME_DYNAMODB: !Ref UrlTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref UrlTable
+      Events:
+        Redirect:
+          Type: Api
+          Properties:
+            Path: /{short_id}
+            Method: get
  UrlTable:
    Type: AWS::Serverless::SimpleTable
    Properties:
@@ -57,4 +77,10 @@ Outputs:
     Value: !GetAtt ShortenUrlFunction.Arn
   ShortenUrlFunctionIamRole:
     Description: Implicit IAM Role created for Shorten URL function
-    Value: !GetAtt ShortenUrlFunctionRole.Arn   
+    Value: !GetAtt ShortenUrlFunctionRole.Arn
+  RedirectFunction:
+    Description: Redirect Lambda Function ARN
+    Value: !GetAtt RedirectFunction.Arn
+  RedirectFunctionIamRole:
+    Description: Implicit IAM Role created for Redirect function
+    Value: !GetAtt RedirectFunctionRole.Arn
